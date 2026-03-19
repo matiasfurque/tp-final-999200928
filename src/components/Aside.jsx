@@ -1,4 +1,4 @@
-import { useContext, useEffect, useState } from "react"
+import { useContext, useState } from "react"
 import { ChatContext } from "../context/ChatContext"
 // import { users } from "../services/mockApi.js"
 
