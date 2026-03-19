@@ -6,7 +6,7 @@ const RouteProtected = ({ children }) => {
   const { loggedUser } = useContext(ChatContext)
 
   if (!loggedUser) {
-    return <Navigate to="/login" replace />
+    return <Navigate to="/login"  />
   }
 
   return (
