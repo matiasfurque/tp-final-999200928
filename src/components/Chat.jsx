@@ -1,89 +1,77 @@
-import { useState, useRef, useEffect, useContext } from "react"
-import { ChatContext } from "../context/ChatContext.jsx"
-import { useNavigate } from "react-router-dom"
+import { useState, useRef, useEffect, useContext } from 'react';
+import { ChatContext } from '../context/ChatContext';
+import { useNavigate } from 'react-router-dom';
 
 const Chat = () => {
-  const [text, setText] = useState("")
-  const chatBodyRef = useRef(null)
+  const [text, setText] = useState('');
+  const chatBodyRef = useRef(null);
 
-  const { selectedUser, logout, handleMessages } = useContext(ChatContext)
+  const { selectedUser, handleMessages, loggedUser, logout } = useContext(ChatContext);
 
-  const navigate = useNavigate()
-
-  const handleChangeText = (event) => {
-    setText(event.target.value)
-  }
-
-  const handleKeyDown = (event) => {
-    if (event.key === "Enter") {
-      sendMessage()
-    }
-  }
+  const navigate = useNavigate();
 
   const sendMessage = () => {
-    if (text.length === 0) {
-      return
-    }
+    if (!text) return;
 
-    const currentTime = new Date()
+    const now = new Date();
     const newMessage = {
-      author: "Ana",
-      time: currentTime.getHours() + ":" + currentTime.getMinutes(),
-      text: text
-    }
+      id: Date.now(),
+      author: loggedUser.email,
+      text,
+      isMine: true,
+      time: `${now.getHours().toString().padStart(2, '0')}:${now.getMinutes().toString().padStart(2, '0')}`,
+    };
 
-    handleMessages(newMessage)
-    setText("")
-  }
-
-  const handleLogout = () => {
-    logout()
-    navigate("/login")
-  }
+    handleMessages(newMessage);
+    setText('');
+  };
 
   useEffect(() => {
-    if (chatBodyRef.current) {
-      chatBodyRef.current.scrollTop = chatBodyRef.current.scrollHeight
-    }
-  }, [])
+  if (chatBodyRef.current) {
+    chatBodyRef.current.scrollTop = chatBodyRef.current.scrollHeight;
+  }
+}, [selectedUser?.messages?.length]);
 
   if (!selectedUser) {
-    return (
-      <section className="chat-cont-empty">
-        <p className="chat-empty">Selecciona un contacto para empezar a conversar</p>
-      </section>
-    )
+    return <p className="not-found-chat">Selecciona un chat 💬</p>;
   }
 
   return (
     <section className="chat">
       <header>
-        <div>
-          <h2>{selectedUser.firstName} {selectedUser.lastName}</h2>
-          <p>{selectedUser.address.country}</p>
-        </div>
-        <button onClick={handleLogout}>Cerrar sesión</button>
+        <h2>
+          {selectedUser.firstName} {selectedUser.lastName}
+        </h2>
+
+        <button
+          onClick={() => {
+            logout();
+            navigate('/login');
+          }}
+        >
+          Salir
+        </button>
       </header>
+
       <div className="chat-body" ref={chatBodyRef}>
-        {
-          selectedUser.messages.map((message) => <div key={message.id} className={`message ${message.author === "Ana" ? "me" : "received"}`}>
-            <p><b>{message.author}</b>: {message.text}</p>
-            <p className="timestamp">{message.time}</p>
-          </div>)
-        }
+        {selectedUser.messages.map((msg) => (
+          <div key={msg.id} className={`message ${msg.isMine ? 'me' : 'received'}`}>
+            <p>{msg.text}</p>
+            <span className="time">{msg.time}</span>
+          </div>
+        ))}
       </div>
+
       <div className="chat-input">
         <input
-          type="text"
-          placeholder="Escribe un mensaje..."
-          onChange={handleChangeText}
-          onKeyDown={handleKeyDown}
           value={text}
+          onChange={(event) => setText(event.target.value)}
+          onKeyDown={(event) => event.key === 'Enter' && sendMessage()}
         />
         <button onClick={sendMessage}>Enviar</button>
       </div>
     </section>
-  )
-}
+  );
+};
 
-export { Chat }
+export { Chat };
